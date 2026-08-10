@@ -1,0 +1,19 @@
+---
+- name: Configure Bastion Server
+  hosts: bastion_servers
+  become: true
+
+  roles:
+    - users
+    - security
+    - docker
+
+- name: Configure Application Server
+  hosts: app_servers
+  become: true
+
+  roles:
+    - users
+    - security
+    - docker
+    - nginx
