@@ -1,148 +1,110 @@
 # Cloud DevOps Lab 2026
 
-A hands-on Cloud DevOps project demonstrating Git/GitHub, Infrastructure as Code using Terraform, AWS infrastructure, security, and server automation using Ansible.
+This repository contains my cloud and DevOps lab work covering AWS infrastructure, Terraform, Ansible, security, and GitHub project management.
 
-## 1. Git & Project Setup
+## What this project covers
 
-- Public GitHub repository
-- Git branches and protected branches
-- Pull Request workflow
-- Branch protection rules
-- GitHub Projects / Kanban board
-- Issue templates: Bug, Feature, Task
-
-### Branch Workflow
-
-```text
-Feature Branch
-      |
-      v
-Pull Request
-      |
-      v
-Main Branch
-```
+- GitHub repository and branch workflow
+- GitHub Projects board and issue templates
+- AWS VPC and subnet setup
+- Bastion host and private application server
+- Internet Gateway and NAT Gateway
+- Terraform remote state with S3
+- Terraform state locking with DynamoDB
+- AWS Security Groups
+- IAM role for EC2
+- Server configuration with Ansible
+- Docker, Docker Compose and Python setup
+- UFW and Fail2Ban
+- Linux user and SSH configuration
+- Ansible Vault
+- Jenkins secrets through AWS SSM Parameter Store
 
 ---
 
-## 2. Infrastructure as Code – Terraform
+## Repository layout
 
-Terraform is used to provision and manage AWS infrastructure.
+```text
+.
+├── ansible/
+│   ├── inventory.ini
+│   └── ...
+├── terraform/
+│   ├── backend.tf
+│   └── ...
+├── .github/
+│   └── ISSUE_TEMPLATE/
+├── .gitignore
+└── README.md
+```
 
-### AWS Architecture
+## AWS setup
+
+The infrastructure is built around one VPC with separate public and private subnets.
 
 ```text
                          Internet
                             |
-                            v
+                            |
                     Internet Gateway
                             |
-                            v
-                    +---------------+
+                    +-------+-------+
                     |      VPC      |
                     |   10.0.0.0/16 |
                     +-------+-------+
                             |
-                +-----------+-----------+
-                |                       |
-                v                       v
-          Public Subnet            Private Subnet
-                |                       |
-                v                       v
-          Bastion EC2               App EC2
-                                        |
-                                        v
-                                   NAT Gateway
-                                        |
-                                        v
-                                     Internet
+              +-------------+-------------+
+              |                           |
+        Public Subnet               Private Subnet
+              |                           |
+              |                           |
+        Bastion Server              App Server
+              |                           |
+              |                      NAT Gateway
+              |                           |
+              +---------------------------+
+                          outbound
 ```
 
-### Infrastructure Components
+The Bastion server is placed in the public subnet. The application server stays in the private subnet and is reached through the Bastion host.
 
-- VPC with CIDR block
-- Public subnet for Bastion Host
-- Private subnet for Application Server
-- Internet Gateway
-- NAT Gateway
-- Bastion EC2 instance
-- Application EC2 instance
+## Terraform
 
-### Terraform State
+Terraform is used to create and manage the AWS infrastructure.
 
-Terraform state is stored remotely in an AWS S3 bucket.
+The Terraform backend uses:
 
-DynamoDB is used for Terraform state locking, and S3 versioning is enabled to retain previous state versions.
+- **S3** for the Terraform state
+- **DynamoDB** for state locking
+- **S3 versioning** for previous state versions
+
+Backend resources currently used:
 
 ```text
-Terraform
-   |
-   +----> S3
-   |       └── Terraform State
-   |
-   └----> DynamoDB
-           └── State Lock
+S3 bucket:       cloud-devops-tf-state-ayesha
+DynamoDB table:  cloud-devops-tf-lock
+Region:          ap-south-1
 ```
 
----
+The state is kept outside the Git repository. Terraform working files and state files are excluded through `.gitignore`.
 
-## 3. Security & Automation
+## Ansible
 
-Ansible is used to configure and secure the EC2 instances after Terraform provisions them.
+After the EC2 instances are created, Ansible is used for server configuration.
+
+The configuration includes:
 
 ```text
-Terraform
-    |
-    v
-AWS Infrastructure
-    |
-    v
-EC2 Instances
-    |
-    v
-Ansible
-    |
-    +-- Docker
-    +-- Docker Compose
-    +-- Python
-    +-- UFW
-    +-- Fail2Ban
-    +-- User Configuration
+Docker
+Docker Compose
+Python
+UFW
+Fail2Ban
+User access
+SSH configuration
 ```
 
-### Security Groups
-
-AWS Security Groups are used as network-level firewalls.
-
-| Port | Protocol | Purpose |
-|------|----------|---------|
-| 22 | TCP | SSH |
-| 80 | TCP | HTTP |
-| 443 | TCP | HTTPS |
-
-Rules should be restricted to trusted sources wherever possible.
-
-### IAM Role
-
-An IAM role is used for EC2 access to required AWS services without storing AWS access keys directly on the server.
-
-Required access includes:
-
-- Amazon S3
-- Amazon CloudWatch
-
-### Ansible Configuration
-
-Ansible is used to install and configure:
-
-- Docker
-- Docker Compose
-- Python
-- UFW
-- Fail2Ban
-- User access
-
-Verification commands:
+Basic checks used during setup:
 
 ```bash
 docker --version
@@ -152,148 +114,153 @@ sudo ufw status
 sudo systemctl is-active fail2ban
 ```
 
-### User Access
+## Security
 
-A dedicated `devops` user is configured for administration, and root SSH login is disabled.
+The setup uses multiple layers of security.
 
-The secure access flow is:
+### AWS Security Groups
+
+Network access is controlled through Security Groups. The main ports used by the servers are:
+
+| Port | Use |
+|------:|-----|
+| 22 | SSH |
+| 80 | HTTP |
+| 443 | HTTPS |
+
+### Bastion access
+
+The private application server is not intended to be accessed directly from the internet.
+
+The access path is:
 
 ```text
-Developer
-    |
-    v
-Bastion Host
-    |
-    v
-Private Application Server
+Local machine
+     |
+     v
+Bastion host
+     |
+     v
+Private application server
 ```
+
+### UFW and Fail2Ban
+
+UFW provides host-level firewall rules, while Fail2Ban is enabled to help protect services against repeated failed authentication attempts.
+
+## IAM
+
+An IAM role is used with the EC2 instance instead of putting AWS access keys directly on the server.
+
+The role is intended to provide the required access to:
+
+- S3
+- CloudWatch
+
+## Secrets
+
+Secrets are kept out of the repository.
 
 ### Ansible Vault
 
-Ansible Vault is used to encrypt sensitive information.
+Ansible Vault is used for encrypted Ansible secrets.
 
-Vault passwords and decrypted secret files must not be committed to GitHub.
+Vault password files and decrypted secret files are excluded from Git.
 
-### Jenkins Credentials
+### Jenkins
 
-Jenkins credentials are stored in AWS Systems Manager (SSM) Parameter Store instead of being hardcoded in source code.
+Jenkins credentials are stored in AWS Systems Manager Parameter Store rather than being written directly into the repository or configuration files.
 
-```text
-SSM Parameter Store
-        |
-        v
-     Secret
-        |
-        v
-      Jenkins
-```
+## GitHub workflow
 
----
+The repository uses a Pull Request based workflow for protected branches.
 
-## Technologies Used
+The project also includes:
 
-- Git
-- GitHub
-- GitHub Projects
-- Terraform
-- AWS VPC
-- AWS EC2
-- AWS S3
-- AWS DynamoDB
-- AWS IAM
-- AWS SSM Parameter Store
-- Ansible
-- Ansible Vault
-- Docker
-- Docker Compose
-- Python
-- UFW
-- Fail2Ban
-- Jenkins
+- Issue templates for bugs, features and tasks
+- GitHub Projects / Kanban board
+- Branch protection and PR rules
 
----
-
-## Project Structure
+The general workflow is:
 
 ```text
-cloud-devops-lab-2026/
-│
-├── terraform/
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── outputs.tf
-│   ├── backend.tf
-│   └── ...
-│
-├── ansible/
-│   ├── inventory.ini
-│   ├── playbook.yml
-│   ├── roles/
-│   └── ...
-│
-├── .github/
-│   └── ISSUE_TEMPLATE/
-│       ├── bug_report.md
-│       ├── feature_request.md
-│       └── task.md
-│
-├── .gitignore
-└── README.md
+Create branch
+     |
+     v
+Make changes
+     |
+     v
+Commit
+     |
+     v
+Push branch
+     |
+     v
+Open Pull Request
+     |
+     v
+Review
+     |
+     v
+Merge
 ```
-
----
-
-## Security Practices
-
-- Protected Git branches
-- Pull Request based workflow
-- Private application subnet
-- Bastion Host for secure access
-- AWS Security Groups
-- UFW firewall
-- Fail2Ban
-- IAM roles instead of hardcoded AWS credentials
-- Ansible Vault for secrets
-- SSM Parameter Store for Jenkins credentials
-- Terraform remote state
-- Terraform state locking
-- S3 state versioning
-
----
 
 ## Verification
 
-Terraform backend resources were verified using:
+Some of the infrastructure and server configuration was checked directly from the environment.
+
+### Docker
 
 ```bash
-aws s3api head-bucket   --bucket cloud-devops-tf-state-ayesha
+docker --version
 ```
+
+### Docker Compose
+
+```bash
+docker compose version
+```
+
+### Python
+
+```bash
+python3 --version
+```
+
+### UFW
+
+```bash
+sudo ufw status
+```
+
+### Fail2Ban
+
+```bash
+sudo systemctl is-active fail2ban
+```
+
+### Terraform state locking
 
 ```bash
 aws dynamodb describe-table   --table-name cloud-devops-tf-lock   --query 'Table.TableStatus'
 ```
 
-S3 versioning was enabled and verified.
+Expected table status:
+
+```text
+ACTIVE
+```
+
+### Terraform state bucket
+
+```bash
+aws s3api head-bucket   --bucket cloud-devops-tf-state-ayesha
+```
+
+S3 versioning is enabled on the Terraform state bucket.
 
 ---
 
-## Project Goal
+## Notes
 
-The goal of this project is to demonstrate how cloud infrastructure can be:
-
-- Provisioned automatically
-- Configured automatically
-- Secured using multiple layers
-- Managed through Git
-- Protected using Pull Requests
-- Reproducibly deployed using Infrastructure as Code
-- Configured using automation
-- Managed using secure secret-storage practices
-
----
-
-## Author
-
-**Ayesha**
-
-Cloud DevOps Lab 2026
+This is a lab project for practicing cloud infrastructure, automation and basic security controls with AWS, Terraform and Ansible.
