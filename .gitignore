@@ -1,0 +1,215 @@
+# =========================================
+# Terraform
+# =========================================
+
+# Terraform working directory
+.terraform/
+**/.terraform/
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+**/*.tfstate
+**/*.tfstate.*
+
+# Terraform crash logs
+crash.log
+crash.*.log
+**/crash.log
+**/crash.*.log
+
+# Terraform plan files
+*.tfplan
+*.plan
+tfplan
+tfplan.*
+
+# Terraform override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform CLI configuration
+.terraformrc
+terraform.rc
+
+
+# =========================================
+# AWS / Cloud Credentials
+# =========================================
+
+# AWS credentials/config
+.aws/
+**/.aws/
+
+# AWS private keys
+*.pem
+*.ppk
+*.key
+
+# SSH keys
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.pub
+
+
+# =========================================
+# Secrets / Environment Variables
+# =========================================
+
+.env
+.env.*
+*.env
+
+# Secret files
+*.secret
+*.secrets
+*.credentials
+*.password
+*.passwd
+
+# Vault passwords
+vault-password
+vault-password.txt
+.vault-password
+.vault-password.txt
+**/vault-password*
+**/.vault-password*
+
+# Ansible Vault temporary/decrypted files
+*.vault
+*.vault.yml.dec
+vault.yml.dec
+
+
+# =========================================
+# Ansible
+# =========================================
+
+# Ansible retry files
+*.retry
+
+# Ansible temporary files
+.ansible/
+**/.ansible/
+
+
+# =========================================
+# Python
+# =========================================
+
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Python packaging
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+
+# =========================================
+# Node.js
+# =========================================
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build output
+dist/
+build/
+
+# Environment files
+.npmrc
+
+
+# =========================================
+# Docker
+# =========================================
+
+# Docker environment files
+docker.env
+docker-compose.override.yml
+
+# Docker logs
+*.docker.log
+
+
+# =========================================
+# Jenkins
+# =========================================
+
+# Jenkins local files
+jenkins_home/
+jenkins_home/**
+*.jenkins.log
+
+# Jenkins secrets/config that should not be committed
+secrets/
+**/secrets/
+
+
+# =========================================
+# SonarQube
+# =========================================
+
+.sonar/
+.sonarqube/
+.scannerwork/
+
+
+# =========================================
+# IDE / Editors
+# =========================================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+
+# =========================================
+# Logs
+# =========================================
+
+*.log
+logs/
+**/logs/
+
+
+# =========================================
+# Temporary files
+# =========================================
+
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old

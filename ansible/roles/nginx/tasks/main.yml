@@ -1,0 +1,30 @@
+---
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: present
+    update_cache: true
+
+- name: Create Nginx default page
+  copy:
+    dest: /var/www/html/index.html
+    owner: www-data
+    group: www-data
+    mode: "0644"
+    content: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <title>Cloud DevOps Lab</title>
+      </head>
+      <body>
+          <h1>Cloud DevOps Lab</h1>
+          <p>Application server configured using Ansible.</p>
+      </body>
+      </html>
+
+- name: Ensure Nginx is running
+  service:
+    name: nginx
+    state: started
+    enabled: true
